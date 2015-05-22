@@ -1,0 +1,68 @@
+
+# Arduino SAM Core and platform.
+#
+# For more info:
+# https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
+
+name=STM32 ARM (32-bits) Boards
+version=1.7.0
+
+####STM32 compile variables
+## not native ARM GCC
+compiler.path={runtime.ide.path}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/
+
+##All the command
+compiler.asm.cmd=arm-none-eabi-gcc
+compiler.c.cmd=arm-none-eabi-gcc
+compiler.cpp.cmd=arm-none-eabi-g++
+compiler.ar.cmd=arm-none-eabi-ar
+compiler.elf.cmd=arm-none-eabi-g++
+compiler.hex.cmd=arm-none-eabi-objcopy
+compiler.bin.cmd=arm-none-eabi-objcopy
+compiler.size.cmd=arm-none-eabi-size
+
+##Set the compiler flags
+compiler.ar.flags=rcs
+compiler.asm.flags=-mthumb -Wall -g -Os 
+compiler.c.flags=-mthumb -Wall -ffunction-sections -g -Os -fno-exceptions -std=gnu90
+compiler.cpp.flags=-mthumb -Wall -ffunction-sections -g -Os -fno-exceptions -fno-rtti
+compiler.elf.flags=-Os -Wl,-Map=c:\tmp.map -Wl,--gc-sections -lstdc++ -lm --specs=nosys.specs
+compiler.hex.flags=-Oihex
+compiler.bin.flags=-Obinary
+
+##===============================================##
+## compile the stm32 peripheral
+
+compiler.libstm32.c.flags="-I{build.system.path}\libstm32\" "-I{build.system.path}\freertos\"
+
+##===============================================##
+
+recipe.S.o.pattern="{compiler.path}{compiler.asm.cmd}" {compiler.asm.flags} -mcpu={build.mcu} -c "{source_file}" -o "{object_file}"
+
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO_{build.board} {build.extra_flags} {compiler.libstm32.c.flags} {includes} -c "{source_file}" -o "{object_file}"
+
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO_{build.board} {build.extra_flags} {compiler.libstm32.c.flags} {includes} -c "{source_file}" -o "{object_file}"
+
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}\{archive_file}" "{object_file}"
+
+#recipe.c.combine.pattern="{compiler.path}{compiler.elf.cmd}" {compiler.elf.flags} -mcpu={build.mcu} "-L{build.variant.path}" "-T{build.variant.path}\{build.ldscript}" {object_files} "{build.path}\{archive_file}" "{build.variant.path}\{build.variant_system_lib}" -o "{build.path}\Nucleo.elf"
+recipe.c.combine.pattern="{compiler.path}{compiler.elf.cmd}" {compiler.elf.flags} -mcpu={build.mcu} "-L{build.variant.path}" "-T{build.variant.path}\{build.ldscript}" {object_files} "{build.path}\{archive_file}" -o "{build.path}\Nucleo.elf"
+
+
+recipe.objcopy.eep.pattern=
+
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.hex.cmd}" {compiler.hex.flags} "{build.path}\Nucleo.elf" "{build.path}\Nucleo.hex"
+
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}\Nucleo.elf" 
+
+recipe.size.regex=\.text\s+([0-9]+).*
+
+##==================================================##
+
+tools.ST-LINK_CLI.cmd=ST-LINK_CLI
+tools.ST-LINK_CLI.cmd.windows=ST-LINK_CLI.exe
+tools.ST-LINK_CLI.path={runtime.ide.path}\hardware\tools\ST-LINK
+
+tools.ST-LINK_CLI.upload.params.verbose=false
+tools.ST-LINK_CLI.upload.params.quiet=
+tools.ST-LINK_CLI.upload.pattern="{path}\{cmd}" -c SWD -P "{build.path}\Nucleo.hex" -Run

@@ -1,0 +1,12 @@
+rpi_motor_board.name=Raspberry Motor Driver Board
+rpi_motor_board.upload.tool=ST-LINK_CLI
+rpi_motor_board.upload.protocol=ST-LINK
+rpi_motor_board.upload.maximum_size=131072
+rpi_motor_board.build.mcu=cortex-m0
+rpi_motor_board.build.f_cpu=48000000L
+rpi_motor_board.build.board=rpi_motor_shield
+rpi_motor_board.build.core=cmsis
+rpi_motor_board.build.extra_flags=-DUSE_STDPERIPH_DRIVER -DSTM32F051
+rpi_motor_board.build.variant=rpi_motor_shield
+rpi_motor_board.build.variant_system_lib=
+rpi_motor_board.build.ldscript=ld\STM32F051R8_FLASH.ld
